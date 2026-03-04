@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from typing import List
 
@@ -24,16 +25,12 @@ users_db: List[User] = [
 next_id = 3
 
 
-@app.get("/", tags=["Root"])
+@app.get("/", tags=["Root"], include_in_schema=False)
 def read_root():
     """
-    Endpoint raiz - Retorna mensagem de boas-vindas
+    Redireciona automaticamente para a documentação interativa
     """
-    return {
-        "message": "Bem-vindo à Hello API!",
-        "docs": "/docs",
-        "version": "1.0.0"
-    }
+    return RedirectResponse(url="/docs")
 
 
 @app.get("/users", response_model=List[User], tags=["Users"])

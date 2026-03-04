@@ -13,7 +13,7 @@ API RESTful desenvolvida com FastAPI, Docker e UV para estudantes avançados do 
 ## Arquitetura da API
 
 ```mermaid
-graph TB
+graph LR
     Cliente[Cliente HTTP] -->|Requisição| API[FastAPI App]
     API -->|Roteamento| Endpoints[Endpoints]
     Endpoints -->|Validação| Pydantic[Pydantic Models]
@@ -65,7 +65,7 @@ hello-api/
 A API possui 5 endpoints principais:
 
 ### 1. GET `/` - Root
-Retorna mensagem de boas-vindas
+Redireciona automaticamente para a documentação em `/docs`
 
 ### 2. GET `/users` - Listar Usuários
 Retorna todos os usuários cadastrados
@@ -125,9 +125,44 @@ Parâmetros:
 
 A API estará disponível em:
 
-- **API**: http://localhost:8000
+- **API**: http://localhost:8000 (redireciona automaticamente para `/docs`)
 - **Documentação Swagger**: http://localhost:8000/docs
 - **Documentação ReDoc**: http://localhost:8000/redoc
+
+#### 4. Como Atualizar a Imagem Após Mudanças no Código
+
+> 📖 **Guia completo disponível:** [DOCKER-WORKFLOW.md](DOCKER-WORKFLOW.md) com diagramas e exemplos detalhados
+
+Quando você modificar o código da API, siga estes passos para atualizar o container Docker:
+
+```bash
+# Passo 1: Parar e remover o container existente
+docker stop hello-api-container
+docker rm hello-api-container
+
+# Passo 2: Remover a imagem antiga (opcional, mas recomendado)
+docker rmi hello-api
+
+# Passo 3: Criar nova imagem com as mudanças
+docker build -t hello-api .
+
+# Passo 4: Executar o novo container
+docker run -d -p 8000:8000 --name hello-api-container hello-api
+```
+
+**Atalho (tudo em um comando):**
+```bash
+docker stop hello-api-container && docker rm hello-api-container && docker build -t hello-api . && docker run -d -p 8000:8000 --name hello-api-container hello-api
+```
+
+**Verificar se está funcionando:**
+```bash
+# Ver logs do container
+docker logs hello-api-container
+
+# Ou ver logs em tempo real
+docker logs -f hello-api-container
+```
 
 #### Comandos Úteis do Docker
 
@@ -262,6 +297,46 @@ Experimente modificar a API:
 3. Adicione testes automatizados com pytest
 4. Configure CORS para permitir requisições de frontend
 5. Adicione logging estruturado
+
+## Dicas e Boas Práticas
+
+### Desenvolvimento com Docker
+
+**Durante o desenvolvimento:**
+- Use o atalho para atualizar rapidamente após mudanças no código
+- Mantenha os logs abertos com `docker logs -f` para debug em tempo real
+- Se não houver mudanças nas dependências, o build será mais rápido (cache)
+
+**Limpeza periódica:**
+```bash
+# Listar todas as imagens
+docker images
+
+# Listar todos os containers (incluindo parados)
+docker ps -a
+
+# Remover containers parados
+docker container prune
+
+# Remover imagens não utilizadas
+docker image prune
+```
+
+### Fluxo de Trabalho Recomendado
+
+1. **Primeira vez:**
+   - Clone o repositório
+   - Execute `docker build -t hello-api .`
+   - Execute `docker run -d -p 8000:8000 --name hello-api-container hello-api`
+
+2. **Durante o desenvolvimento (quando alterar código):**
+   ```bash
+   docker stop hello-api-container && docker rm hello-api-container && docker build -t hello-api . && docker run -d -p 8000:8000 --name hello-api-container hello-api && docker logs -f hello-api-container
+   ```
+
+3. **Para debug:**
+   - Use `docker logs -f hello-api-container` para ver logs em tempo real
+   - Acesse http://localhost:8000 para testar automaticamente (redireciona para /docs)
 
 ## Recursos Adicionais
 
